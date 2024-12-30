@@ -11,8 +11,7 @@ import re
 st.set_page_config(layout="wide")
 def get_dependency_graph(packages):
     """
-    Generates a dependency graph using zero-based integer IDs for nodes and edges.
-
+    Generates a dependency graph 
     Args:
         packages (list): List of packages with dependencies.
 
