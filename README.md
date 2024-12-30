@@ -4,7 +4,7 @@ Will provide a visualisation of python modules in your environment or virtual en
 
 To use
 ``` 
-pip install requirements.txt
+pip install dependencies.txt
 ```
 
 then
