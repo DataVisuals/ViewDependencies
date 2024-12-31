@@ -4,20 +4,16 @@ import streamlit as st
 from streamlit_agraph import agraph, Node, Edge, Config, ConfigBuilder
 from pprint import pprint
 import json
+import networkx as nx
 
 import subprocess
 import re
 
 st.set_page_config(layout="wide")
-def get_dependency_graph(packages):
-    """
-    Generates a dependency graph 
-    Args:
-        packages (list): List of packages with dependencies.
 
-    Returns:
-        tuple: A tuple containing two lists - nodes and edges.
-    """
+G = nx.DiGraph()
+
+def get_dependency_graph(packages):
     # Mapping to keep track of unique node IDs
     node_id_map = {}
     nodes = []
@@ -28,10 +24,11 @@ def get_dependency_graph(packages):
         package_key = package['package']['key']
         package_name = package['package']['package_name']
         node_id_map[package_key] = idx  # Map package key to integer ID
+        G.add_node(package_name)
         nodes.append(Node(id=package_name,
                           label=package_name,
                           size=30))
-
+        
 
     # Generate edges using the integer IDs
     for package in packages:
@@ -40,24 +37,33 @@ def get_dependency_graph(packages):
             dep_key = dependency['key']
             if dep_key in node_id_map:
                 target_id = node_id_map[dep_key]
+                G.add_edge(package['package']['key'], dependency['key'])
                 edges.append(Edge(source=package['package']['key'], target=dependency['key']))
 
+    for node in nodes:
+        degrees = G.degree(node.id)
+        size=(degrees *5) + 10
+        node.size = size
+        if degrees < 1:
+            node.color = "red"
+                    
     return nodes, edges
-
 
 # Parse JSON output for nodes and edges
 result = subprocess.run(['pipdeptree', '--warn', 'silence', '--json'], stdout=subprocess.PIPE, text=True)
 output = result.stdout
 dependency_tree = json.loads(output)
-
-
+config = None
 
 # Get the graph
 nodes, edges = get_dependency_graph(dependency_tree)
 
 # 1. Build the config (with sidebar to play with options) .
-config_builder = ConfigBuilder(nodes,edges=edges)
-config = config_builder.build()
+try:
+    config = Config(from_json="config.json")
+except:
+    config_builder = ConfigBuilder()
+    config = config_builder.build()
 
 # 2. If your done, save the config to a file.
 config.save("config.json")
