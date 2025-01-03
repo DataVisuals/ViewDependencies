@@ -13,7 +13,7 @@ st.set_page_config(layout="wide")
 
 G = nx.DiGraph()
 
-def get_dependency_graph(packages):
+def deps2graph(packages):
     # Mapping to keep track of unique node IDs
     node_id_map = {}
     nodes = []
@@ -50,13 +50,17 @@ def get_dependency_graph(packages):
     return nodes, edges
 
 # Parse JSON output for nodes and edges
-result = subprocess.run(['pipdeptree', '--warn', 'silence', '--json'], stdout=subprocess.PIPE, text=True)
-output = result.stdout
-dependency_tree = json.loads(output)
+def get_dependencies():
+    result = subprocess.run(['pipdeptree', '--warn', 'silence', '--json'], stdout=subprocess.PIPE, text=True)
+    output = result.stdout
+    dependency_tree = json.loads(output)
+    return dependency_tree
+
+dependency_tree = get_dependencies()
 config = None
 
 # Get the graph
-nodes, edges = get_dependency_graph(dependency_tree)
+nodes, edges = deps2graph(dependency_tree)
 
 # 1. Build the config (with sidebar to play with options) .
 try:
@@ -92,4 +96,7 @@ return_value = agraph(nodes=nodes,
                       edges=edges, 
                       config=config)
 
-st.markdown("**Selected nodes**: %s" % return_value)
+md  =   ("**Selected nodes**: %s" % return_value) + "<br>" + \
+        ("**Is Needed By**: %s" % ",".join([x for x in G.predecessors(return_value)]) + "<br>") + \
+        ("**Needs**: %s" % ",".join([x for x in G.successors(return_value)]))
+st.markdown(md, unsafe_allow_html=True)

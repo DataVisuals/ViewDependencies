@@ -1,6 +1,6 @@
 {
   "height": "750px",
-  "width": "1200px",
+  "width": "1500px",
   "physics": {
     "enabled": true,
     "solver": "forceAtlas2Based",
