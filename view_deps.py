@@ -96,7 +96,9 @@ return_value = agraph(nodes=nodes,
                       edges=edges, 
                       config=config)
 
-md  =   ("**Selected nodes**: %s" % return_value) + "<br>" + \
+
+if return_value:    
+    md  =   ("**Selected nodes**: %s" % return_value) + "<br>" + \
         ("**Is Needed By**: %s" % ",".join([x for x in G.predecessors(return_value)]) + "<br>") + \
-        ("**Needs**: %s" % ",".join([x for x in G.successors(return_value)]))
-st.markdown(md, unsafe_allow_html=True)
+        ("**Needs**: %s" % ",".join([x for x in G.successors(return_value)])) 
+    st.markdown(md, unsafe_allow_html=True)
